@@ -3,18 +3,20 @@
 # 
 
 import argparse, csv, collections, pprint
+from copy import deepcopy
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 # parser.add_argument(arg, help=' ')
 args = parser.parse_args()
 
-# class Move:
-#     def __init__(self)
-
 class Game:
-    size = 7
+    size = 4
     turn = 'B'
-    board = []#[['.'] * size] * size
+    board = []
+
     def __init__(self):
+        pass
+
+    def setup_new_game(self):
         for i in range(self.size):
             self.board.append(['.'] * self.size)
         self.board[0][0] = 'B'
@@ -105,49 +107,72 @@ class Game:
                 if self.board[i][j] == '.':
                     if self.within1(i, j):
                         moves.append(('expand', i, j))
-                for (move_i, move_j) in self.within2(i, j):
-                    moves.append(('jump', i, j, move_i, move_j))
+                        for (move_i, move_j) in self.within2(i, j):
+                            moves.append(('jump', i, j, move_i, move_j))
         return moves
 
     def apply_move(self, move):
-        """ a move will either be 'extend', target_i, target_j, or:
+        """ Returns a new game, same as the old one, but with one move applied.
+        A move will either be 'extend', target_i, target_j, or:
         'jump', target_i, target_j, source_i, source_j"""
+
+        newboard = deepcopy(self.board)
         target_i = move[1]
         target_j = move[2]
-        self.board[target_i][target_j] = self.turn
+        newboard[target_i][target_j] = self.turn
         if target_i > 0 and target_j > 0 and self.board[target_i-1][target_j-1] != '.':
-            self.board[target_i-1][target_j-1] = self.turn
+            newboard[target_i-1][target_j-1] = self.turn
         if target_i > 0 and self.board[target_i-1][target_j] != '.':
-            self.board[target_i-1][target_j] = self.turn
+            newboard[target_i-1][target_j] = self.turn
         if target_i > 0 and target_j < self.size-1 and self.board[target_i-1][target_j+1] != '.':
-            self.board[target_i-1][target_j+1] = self.turn
+            newboard[target_i-1][target_j+1] = self.turn
         if target_j > 0 and self.board[target_i][target_j-1] != '.':
-            self.board[target_i][target_j-1] = self.turn
+            newboard[target_i][target_j-1] = self.turn
         if target_j < self.size-1 and self.board[target_i][target_j+1] != '.':
-            self.board[target_i][target_j+1] = self.turn
+            newboard[target_i][target_j+1] = self.turn
         if target_i < self.size-1 and target_j > 0 and self.board[target_i+1][target_j-1] != '.':
-            self.board[target_i+1][target_j-1] = self.turn
+            newboard[target_i+1][target_j-1] = self.turn
         if target_i < self.size-1 and self.board[target_i+1][target_j] != '.':
-            self.board[target_i+1][target_j] = self.turn
+            newboard[target_i+1][target_j] = self.turn
         if target_i < self.size-1 and target_j < self.size-1 and self.board[target_i+1][target_j+1] != '.':
-            self.board[target_i+1][target_j+1] = self.turn
+            newboard[target_i+1][target_j+1] = self.turn
 
         if move[0] == 'jump':
-            self.board[move[3]][move[4]] = '.'
+            newboard[move[3]][move[4]] = '.'
         
         if self.turn == 'B':
-            self.turn = 'G'
+            newturn = 'G'
         elif self.turn == 'G':
-            self.turn = 'B'
+            newturn = 'B'
+
+        newgame = Game()
+        newgame.turn = newturn
+        newgame.board = newboard
+        return newgame
 
 
 a = Game()
 print a
+a.setup_new_game()
 moves = a.get_moves()
-print a.get_moves()
-a.apply_move(moves[2])
-print a
-moves = a.get_moves()
-print moves
-a.apply_move(moves[0])
-print a
+for move in moves:
+    val = a.apply_move(move).value()
+    print move, val
+
+# print a.get_moves()[0]
+# a.apply_move_inplace(a.get_moves()[0])
+b = a.apply_move(a.get_moves()[0])
+print b
+# print a
+# print a.get_moves()[0]
+# a.apply_move_inplace(a.get_moves()[0])
+# print a
+# print a.get_moves()[0]
+# a.apply_move_inplace(a.get_moves()[0])
+# print a
+# a.apply_move_inplace(a.get_moves()[0])
+# print a
+# a.apply_move_inplace(a.get_moves()[0])
+# print a
+# a.apply_move_inplace(a.get_moves()[0])
+# print a
