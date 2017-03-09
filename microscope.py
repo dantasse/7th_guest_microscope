@@ -3,15 +3,18 @@
 # 
 
 import argparse, csv, collections, pprint
-from copy import deepcopy
+# from copy import deepcopy
+import copy
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-# parser.add_argument(arg, help=' ')
+parser.add_argument('--board_size', type=int, default=7, help=' ')
+parser.add_argument('--search_depth', type=int, default=3, help=' ')
 args = parser.parse_args()
 
 class Game:
-    size = 4
+    size = args.board_size
     turn = 'B'
     board = []
+    search_depth = args.search_depth
 
     def __init__(self):
         pass
@@ -26,21 +29,10 @@ class Game:
 
     def __str__(self):
         retval = 'Turn: ' + self.turn + '\n';
-        retval += 'Value: ' + str(self.value()) + '\n';
+        retval += 'Value: ' + str(self.value(0)) + '\n';
         for row in self.board:
             retval += (''.join(row) + '\n')
         return retval
-
-    def value(self):
-        val = 0
-        for row in self.board:
-            for char in row:
-                if char == 'B':
-                    val += 1
-                elif char == 'G':
-                    val -= 1
-        return val
-
     def within1(self, i, j):
         """ Read this as: if there is a |self.turn| piece within 1 of board[i][j]"""
         if i > 0 and j > 0 and self.board[i-1][j-1] == self.turn:
@@ -107,16 +99,22 @@ class Game:
                 if self.board[i][j] == '.':
                     if self.within1(i, j):
                         moves.append(('expand', i, j))
-                        for (move_i, move_j) in self.within2(i, j):
-                            moves.append(('jump', i, j, move_i, move_j))
+                    for (move_i, move_j) in self.within2(i, j):
+                        moves.append(('jump', i, j, move_i, move_j))
         return moves
+
+    def boardcopy(self):
+        newboard = []
+        for row in self.board:
+            newboard.append(copy.copy(row))
+        return newboard
 
     def apply_move(self, move):
         """ Returns a new game, same as the old one, but with one move applied.
         A move will either be 'extend', target_i, target_j, or:
         'jump', target_i, target_j, source_i, source_j"""
 
-        newboard = deepcopy(self.board)
+        newboard = self.boardcopy()
         target_i = move[1]
         target_j = move[2]
         newboard[target_i][target_j] = self.turn
@@ -150,29 +148,67 @@ class Game:
         newgame.board = newboard
         return newgame
 
+    def simple_value(self):
+        """ Value taking no future turns into account; just: how good is this
+        board right now."""
+        num_bs = num_gs = 0
+        for row in self.board:
+            for char in row:
+                if char == 'B':
+                    num_bs += 1
+                elif char == 'G':
+                    num_gs += 1
+        if num_bs == 0:
+            return -10000
+        elif num_gs == 0:
+            return 10000
+        else:
+            return num_bs - num_gs
+
+    def value(self, depth):
+        """ Returns the value of the current board state."""
+        if depth == 0:
+            return self.simple_value()
+        else:
+            all_moves = self.get_moves()
+            if len(all_moves) == 0:
+                return 10000 if self.turn == 'G' else -10000
+            moves_scores = {}
+            for move in all_moves:
+                moves_scores[move] = self.apply_move(move).value(depth-1)
+            if self.turn == 'B':
+                best_move_score = max(moves_scores.items(), key=lambda x: x[1])
+                return best_move_score[1]
+            elif self.turn == 'G':
+                worst_move_score = min(moves_scores.items(), key=lambda x: x[1])
+                return worst_move_score[1]
+
+    def next_move(self): 
+        all_moves = self.get_moves()
+        if len(all_moves) == 0:
+            return None
+            # return [] if self.turn == 'G' else 
+        moves_scores = {}
+        for move in all_moves:
+            moves_scores[move] = self.apply_move(move).value(self.search_depth)
+        if self.turn == 'B':
+            best_move_score = max(moves_scores.items(), key=lambda x: x[1])
+            best_move = best_move_score[0]
+            return best_move
+            # return self.apply_move(best_move)
+        elif self.turn == 'G':
+            worst_move_score = min(moves_scores.items(), key=lambda x: x[1])
+            return worst_move_score[0]
+            # return self.apply_move(worst_move_score[0])
 
 a = Game()
-print a
 a.setup_new_game()
-moves = a.get_moves()
-for move in moves:
-    val = a.apply_move(move).value()
-    print move, val
 
-# print a.get_moves()[0]
-# a.apply_move_inplace(a.get_moves()[0])
-b = a.apply_move(a.get_moves()[0])
-print b
-# print a
-# print a.get_moves()[0]
-# a.apply_move_inplace(a.get_moves()[0])
-# print a
-# print a.get_moves()[0]
-# a.apply_move_inplace(a.get_moves()[0])
-# print a
-# a.apply_move_inplace(a.get_moves()[0])
-# print a
-# a.apply_move_inplace(a.get_moves()[0])
-# print a
-# a.apply_move_inplace(a.get_moves()[0])
-# print a
+print a
+
+for i in range(100):
+    move = a.next_move()
+    print a.turn, move
+    a = a.apply_move(move)
+    print a
+
