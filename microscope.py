@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-# 
+# See readme.txt for more info.
 
 import argparse, csv, collections, pprint
-# from copy import deepcopy
 import copy
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--board_size', type=int, default=7, help=' ')
@@ -219,15 +218,8 @@ BB..GGG
 GGBBBBG""")
 
 
-for i in range(20):
-    move = a.next_move()
-    print move
-    a = a.apply_move(move)
-    print a
+move = a.next_move()
+print move
+a = a.apply_move(move)
+print a
 
-# for i in range(100):
-#     move = a.next_move()
-#     print a.turn, move
-#     a = a.apply_move(move)
-#     print a
-# 
