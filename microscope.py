@@ -200,15 +200,34 @@ class Game:
             worst_move_score = min(moves_scores.items(), key=lambda x: x[1])
             return worst_move_score[0]
             # return self.apply_move(worst_move_score[0])
+    
+    def new_board(self, str):
+        newboard = []
+        for line in str.split('\n'):
+            newboard.append(list(line))
+        self.board = newboard 
 
 a = Game()
 a.setup_new_game()
+a.new_board("""\
+GBBBGBG
+GGBBGBG
+BBGBGBG
+BBGGGGG
+BBGGGGB
+BB..GGG
+GGBBBBG""")
 
-print a
 
-for i in range(100):
+for i in range(20):
     move = a.next_move()
-    print a.turn, move
+    print move
     a = a.apply_move(move)
     print a
 
+# for i in range(100):
+#     move = a.next_move()
+#     print a.turn, move
+#     a = a.apply_move(move)
+#     print a
+# 
