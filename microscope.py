@@ -4,15 +4,11 @@
 
 import argparse, csv, collections, pprint
 import copy
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--board_size', type=int, default=7, help=' ')
-parser.add_argument('--search_depth', type=int, default=3, help=' ')
-args = parser.parse_args()
 
 class Game:
-    size = args.board_size
+    size = 7
     turn = 'B'
-    search_depth = args.search_depth
+    search_depth = 3
 
     def __init__(self):
         self.board = []
@@ -206,7 +202,14 @@ class Game:
         self.board = newboard 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--board_size', type=int, default=7, help=' ')
+    parser.add_argument('--search_depth', type=int, default=3, help=' ')
+    args = parser.parse_args()
+    
     a = Game()
+    a.size = args.board_size
+    a.search_depth = args.search_depth
     a.setup_new_game()
     a.new_board("""\
 GBBBGBG
