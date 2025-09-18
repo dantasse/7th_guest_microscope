@@ -4,19 +4,14 @@
 
 import argparse, csv, collections, pprint
 import copy
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--board_size', type=int, default=7, help=' ')
-parser.add_argument('--search_depth', type=int, default=3, help=' ')
-args = parser.parse_args()
 
 class Game:
-    size = args.board_size
+    size = 7
     turn = 'B'
-    board = []
-    search_depth = args.search_depth
+    search_depth = 3
 
     def __init__(self):
-        pass
+        self.board = []
 
     def setup_new_game(self):
         for i in range(self.size):
@@ -206,9 +201,17 @@ class Game:
             newboard.append(list(line))
         self.board = newboard 
 
-a = Game()
-a.setup_new_game()
-a.new_board("""\
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--board_size', type=int, default=7, help=' ')
+    parser.add_argument('--search_depth', type=int, default=3, help=' ')
+    args = parser.parse_args()
+    
+    a = Game()
+    a.size = args.board_size
+    a.search_depth = args.search_depth
+    a.setup_new_game()
+    a.new_board("""\
 GBBBGBG
 GGBBGBG
 BBGBGBG
@@ -217,9 +220,8 @@ BBGGGGB
 BB..GGG
 GGBBBBG""")
 
-
-move = a.next_move()
-print move
-a = a.apply_move(move)
-print a
+    move = a.next_move()
+    print(move)
+    a = a.apply_move(move)
+    print(a)
 
